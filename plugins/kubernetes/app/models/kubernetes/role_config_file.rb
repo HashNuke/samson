@@ -116,13 +116,23 @@ module Kubernetes
       end
 
       def cpu
-        cpu = @container_hash.try(:[], :resources).try(:[], :limits).try(:[], :cpu) || '0.2' # TODO: remove defaults
+        cpu = limits.try(:[], :cpu) || '0.2' # TODO: remove defaults
         /(\d+(.\d+)?)/.match(cpu).to_s
       end
 
       def ram
-        ram = @container_hash.try(:[], :resources).try(:[], :limits).try(:[], :memory) || '512' # TODO: remove defaults
+        ram = limits.try(:[], :memory) || '512' # TODO: remove defaults
         /(\d+)/.match(ram).to_s
+      end
+
+      private
+
+      def resources
+        @container_hash[:resources]
+      end
+
+      def limits
+        resources.try(:[], :limits)
       end
 
     end
