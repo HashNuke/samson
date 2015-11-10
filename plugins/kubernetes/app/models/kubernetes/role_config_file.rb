@@ -63,7 +63,7 @@ module Kubernetes
       end
 
       def pod_template
-        PodTemplate.new(spec[:template])
+        @pod_template ||= PodTemplate.new(spec[:template])
       end
 
       def deploy_strategy
@@ -95,7 +95,7 @@ module Kubernetes
       # in the pod, the container that should run the image from this project
       # is the first container defined.
       def container
-        Container.new(spec[:containers].first)
+        @container ||= Container.new(spec[:containers].first)
       end
 
       private
