@@ -25,16 +25,19 @@ module Kubernetes
     end
 
     def parse_replication_controller
-      @replication_controller = ReplicationController.new(as_hash('ReplicationController'))
+      rc_hash = as_hash('ReplicationController')
+      raise 'ReplicationController missing in the configuration file.' if rc_hash.nil?
+      @replication_controller = ReplicationController.new(rc_hash)
     end
 
     def parse_service
-      @service = Service.new(as_hash('Service'))
+      service_hash = as_hash('Service')
+      @service = Service.new(service_hash) unless service_hash.nil?
     end
 
     def as_hash(type)
       hash = Array.wrap(@config_file).detect { |doc| doc['kind'] == type }.freeze
-      hash.dup.with_indifferent_access
+      hash.dup.with_indifferent_access unless hash.nil?
     end
 
     #
@@ -47,8 +50,8 @@ module Kubernetes
         @rc_hash = rc_hash
       end
 
-      def name
-        labels[:role]
+      def labels
+        metadata[:labels]
       end
 
       def replicas
@@ -69,12 +72,12 @@ module Kubernetes
 
       private
 
-      def spec
-        @rc_hash[:spec]
+      def metadata
+        @rc_hash[:metadata]
       end
 
-      def labels
-        @rc_hash[:metadata][:labels]
+      def spec
+        @rc_hash[:spec]
       end
     end
 
@@ -82,6 +85,10 @@ module Kubernetes
 
       def initialize(pod_hash)
         @pod_hash = pod_hash
+      end
+
+      def labels
+        metadata[:labels]
       end
 
       # NOTE: This logic assumes that if there are multiple containers defined
@@ -92,6 +99,10 @@ module Kubernetes
       end
 
       private
+
+      def metadata
+        @pod_hash[:metadata]
+      end
 
       def spec
         @pod_hash[:spec]
@@ -126,10 +137,26 @@ module Kubernetes
         metadata[:name]
       end
 
+      def labels
+        metadata[:labels]
+      end
+
+      def selector
+        spec[:selector]
+      end
+
+      def type
+        spec[:type]
+      end
+
       private
 
       def metadata
         @service_hash[:metadata]
+      end
+
+      def spec
+        @service_hash[:spec]
       end
     end
   end
