@@ -219,4 +219,40 @@ describe GitRepository do
     end
   end
 
+  describe "#directory_contents" do
+    it 'returns a single file inside given directory' do
+      create_repo_without_tags
+      repository.clone!
+      files = repository.directory_contents('master')
+      assert_includes files, 'foo'
+    end
+
+    it 'returns all files inside given directory' do
+      create_repo_with_second_file
+      repository.clone!
+      files = repository.directory_contents('master')
+      assert_includes files, 'foo'
+      assert_includes files, 'foo2'
+    end
+
+    it 'accepts a block' do
+      create_repo_with_second_file
+      repository.clone!
+      files = repository.directory_contents('master').select { |file|
+        file.eql?('foo2')
+      }
+      refute_includes files, 'foo'
+      assert_includes files, 'foo2'
+    end
+  end
+
+  describe "#file_contents" do
+    it 'returns the contents of the given file' do
+      create_repo_without_tags
+      repository.clone!
+      content = repository.file_contents('master', 'foo')
+      content.chomp.must_equal 'monkey'
+    end
+  end
+
 end

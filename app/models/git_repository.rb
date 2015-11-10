@@ -116,7 +116,13 @@ class GitRepository
 
   def directory_contents(git_ref, path: '.')
     cmd = "git ls-tree -r #{git_ref} --name-only --full-tree #{path}"
-    valid, output = run_single_command(cmd) { |line| line.chomp }
+    valid, output = run_single_command(cmd) { |line|
+      if block_given?
+        yield line.chomp
+      else
+        line.chomp
+      end
+    }
     Rails.logger.error("Could not list the files in directory '#{path}'. Git Ref '#{git_ref}'") unless valid
     output
   end

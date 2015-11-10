@@ -45,6 +45,15 @@ module GitRepoTestHelper
     SHELL
   end
 
+  def create_repo_with_second_file
+    create_repo_without_tags
+    execute_on_remote_repo <<-SHELL
+      echo more-monkey >> foo2
+      git add foo2
+      git commit -m "added more monkey"
+    SHELL
+  end
+
   def current_branch
     `git rev-parse --abbrev-ref HEAD`.strip
   end
