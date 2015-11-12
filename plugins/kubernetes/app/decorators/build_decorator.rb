@@ -15,7 +15,7 @@ Build.class_eval do
     }
 
     config_files.map do |file|
-      file_contents = project.repository.file_contents(git_sha, file)
+      file_contents = file_from_repo(file)
       config_file = Kubernetes::RoleConfigFile.new(file_contents, file)
 
       # TODO : Build -> KubernetesRoles association

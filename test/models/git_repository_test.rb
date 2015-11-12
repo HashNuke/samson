@@ -244,15 +244,11 @@ describe GitRepository do
       refute_includes files, 'foo'
       assert_includes files, 'foo2'
     end
-  end
 
-  describe "#file_contents" do
-    it 'returns the contents of the given file' do
-      create_repo_without_tags
-      repository.clone!
-      content = repository.file_contents('master', 'foo')
-      content.chomp.must_equal 'monkey'
+    it 'fails if there is no repository in the local cache repo' do
+      assert_raises(RuntimeError) do
+        repository.directory_contents('master')
+      end
     end
   end
-
 end
