@@ -5,7 +5,8 @@ Project.class_eval do
   has_many :roles, class_name: 'Kubernetes::Role'
 
   def file_from_repo(path, git_ref, ttl: 1.hour)
-    Rails.cache.fetch([self, path], expire_in: ttl) do
+    # Caching by Git reference
+    Rails.cache.fetch([git_ref, path], expire_in: ttl) do
       data = GITHUB.contents(github_repo, path: path, ref: git_ref)
       Base64.decode64(data[:content])
     end
@@ -13,9 +14,18 @@ Project.class_eval do
     nil
   end
 
+  def directory_contents_from_repo(path, git_ref, ttl: 1.hour)
+    # Caching by Git reference
+    Rails.cache.fetch([git_ref, path], expire_in: ttl) do
+      GITHUB.contents(github_repo, path: path, ref: git_ref).collect{ |file|
+        file.path if file.name.ends_with?('.yml', '.yaml', '.json')
+      }
+    end
+  end
+
   def refresh_kubernetes_roles!(git_ref)
-    config_files = kubernetes_config_files(git_ref)
-    imported_roles = import_kubernetes_roles(config_files, git_ref)
+    config_files = directory_contents_from_repo('kubernetes', git_ref)
+    imported_roles = build_kubernetes_roles(config_files, git_ref)
 
     # Soft deletes all the current kubernetes roles
     Kubernetes::Role.soft_delete_all!(roles)
@@ -36,7 +46,7 @@ Project.class_eval do
 
   # Given a list of kubernetes configuration files, retrieves the corresponding contents
   # and builds the corresponding Kubernetes Roles
-  def import_kubernetes_roles(config_files, git_ref)
+  def build_kubernetes_roles(config_files, git_ref)
     config_files.map do |file|
       file_contents = file_from_repo(file, git_ref)
       config_file = Kubernetes::RoleConfigFile.new(file_contents, file)
