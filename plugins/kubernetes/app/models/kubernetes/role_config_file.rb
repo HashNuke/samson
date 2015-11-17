@@ -10,10 +10,11 @@ module Kubernetes
   # https://cloud.google.com/container-engine/docs/services/operations
   #
   class RoleConfigFile
-    attr_reader :replication_controller, :service
+    attr_reader :file_path, :replication_controller, :service
 
-    def initialize(contents, filepath)
-      @config_file = Kubernetes::Util.parse_file(contents, filepath)
+    def initialize(contents, file_path)
+      @file_path = file_path
+      @config_file = Kubernetes::Util.parse_file(contents, file_path)
       parse_file
     end
 
