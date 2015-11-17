@@ -61,18 +61,18 @@ samson.service('kubernetesService', function($http, $q) {
     return deferred.promise;
   };
 
-  this.createRole = function(project_id, role) {
-    var payload = JSON.stringify(role, _.without(Object.keys(role), 'id', 'project_id'));
-
+  this.refreshRoles = function(project_id, reference) {
     var deferred = $q.defer();
-    $http.post('/projects/' + project_id + '/kubernetes_roles', payload).then(
+
+    $http.get('/projects/' + project_id + '/kubernetes_roles/refresh?ref=' + reference, config).then(
       function(response) {
-        deferred.resolve(response.data);
+        deferred.resolve(response.data)
       },
-      function(response) {
-        handleError(response, deferred);
+      function() {
+        deferred.reject('An error occurred while trying to create the new roles. Please, try again later.')
       }
     );
+
     return deferred.promise;
   };
 
