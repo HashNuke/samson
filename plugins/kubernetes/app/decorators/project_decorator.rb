@@ -19,36 +19,42 @@ Project.class_eval do
         file_name.ends_with?('.yml', '.yaml', '.json')
       }
     end
+  rescue Octokit::NotFound
+    nil
   end
 
+  # Imports the new kubernetes roles. This operation is atomic: if one role fails to be imported, none
+  # of them will be persisted and the soft deletion will be rollbacked.
   def refresh_kubernetes_roles!(git_ref)
     config_files = directory_contents_from_repo('kubernetes', git_ref)
 
-    # Soft deletes all the current kubernetes roles
-    roles.each(&:soft_delete!)
+    if config_files.try(:any?)
+      Project.transaction do
+        roles.each(&:soft_delete!)
 
-    # Imports the new kubernetes roles
-    imported = import_kubernetes_roles(config_files, git_ref) do |role|
-      roles.build(
-        config_file: role.file_path,
-        name: role.replication_controller.labels[:role],
-        service_name: role.service.name,
-        ram: role.replication_controller.pod_template.container.ram,
-        cpu: role.replication_controller.pod_template.container.cpu,
-        replicas: role.replication_controller.replicas,
-        deploy_strategy: role.replication_controller.deploy_strategy
-      )
+        kubernetes_config_files(config_files, git_ref) { |config_file|
+          roles.create!(
+            config_file: config_file.file_path,
+            name: config_file.replication_controller.labels[:role],
+            service_name: config_file.service.name,
+            ram: config_file.replication_controller.pod_template.container.ram,
+            cpu: config_file.replication_controller.pod_template.container.cpu,
+            replicas: config_file.replication_controller.replicas,
+            deploy_strategy: config_file.replication_controller.deploy_strategy)
+        }
+
+        # Need to reload the project to refresh the association otherwise
+        # the soft deleted roles will be rendered by the JSON serializer
+        reload.roles
+      end
     end
-
-    # Saves the new roles into the database
-    imported.each(&:save!)
   end
 
   private
 
   # Given a list of kubernetes configuration files, retrieves the corresponding contents
   # and builds the corresponding Kubernetes Roles
-  def import_kubernetes_roles(config_files, git_ref)
+  def kubernetes_config_files(config_files, git_ref)
     config_files.map do |file|
       file_contents = file_from_repo(file, git_ref)
       config_file = Kubernetes::RoleConfigFile.new(file_contents, file)
