@@ -1,4 +1,4 @@
-samson.service('kubernetesService', function($http, $q, kubernetesRoleFactory) {
+samson.service('kubernetesService', function($http, $q, httpErrorService, kubernetesRoleFactory) {
 
   var config = {
     headers: {
@@ -20,7 +20,7 @@ samson.service('kubernetesService', function($http, $q, kubernetesRoleFactory) {
         }));
       },
       function(response) {
-        deferred.reject(handleErrors(response.data));
+        deferred.reject(httpErrorService.handleResponse(response));
       }
     );
 
@@ -35,7 +35,7 @@ samson.service('kubernetesService', function($http, $q, kubernetesRoleFactory) {
         deferred.resolve(kubernetesRoleFactory.build(response.data));
       },
       function(response) {
-        deferred.reject(handleErrors(response.data));
+        deferred.reject(httpErrorService.handleResponse(response));
       }
     );
 
@@ -51,7 +51,7 @@ samson.service('kubernetesService', function($http, $q, kubernetesRoleFactory) {
         deferred.resolve();
       },
       function(response) {
-        deferred.reject(handleErrors(response.data));
+        deferred.reject(httpErrorService.handleResponse(response));
       }
     );
     return deferred.promise;
@@ -69,10 +69,10 @@ samson.service('kubernetesService', function($http, $q, kubernetesRoleFactory) {
       function(response) {
         switch (response.status) {
           case 404:
-            deferred.reject(handleWarning('No roles have been found for the given Git reference.'));
+            deferred.reject(httpErrorService.createResultType('warning', 'No roles have been found for the given Git reference.'));
             break;
           default:
-            deferred.reject(handleErrors(response.data));
+            deferred.reject(httpErrorService.handleResponse(response));
         }
       }
     );
@@ -92,35 +92,10 @@ samson.service('kubernetesService', function($http, $q, kubernetesRoleFactory) {
         deferred.resolve(response.data);
       },
       function(response) {
-        deferred.reject(handleErrors(response.data));
+        deferred.reject(handleFailure(response));
       }
     );
 
     return deferred.promise;
   };
-
-  /*********************************************************************
-   Other functions
-   *********************************************************************/
-
-  function handleWarning(warning) {
-    return createResultType('warning', [warning]);
-  }
-
-  function handleErrors(data) {
-    var messages = [];
-    if (!_.isUndefined(data) && !_.isUndefined(data.errors)) {
-      response.data.errors.map(function(error) {
-        messages.push(error.message);
-      });
-    }
-    else {
-      messages.push('Due to a technical error, the request could not be completed. Please, try again later.');
-    }
-    return createResultType('error', messages);
-  }
-
-  function createResultType(type, messages) {
-    return {type: type, messages: messages};
-  }
 });
