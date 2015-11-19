@@ -3,7 +3,9 @@
     <md-progress-circular md-mode="indeterminate" ng-if="!roles"></md-progress-circular>
     <div ng-if="roles">
 
-      <git-references-typeahead selected-reference="refreshRoles(reference)"></git-references-typeahead>
+      <% if is_user_admin_for_project? %>
+        <git-references-typeahead selected-reference="refreshRoles(reference)"></git-references-typeahead>
+      <% end %>
 
       <table class="table table-condensed">
         <thead>
