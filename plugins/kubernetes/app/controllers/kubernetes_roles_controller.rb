@@ -2,7 +2,7 @@ class KubernetesRolesController < ApplicationController
   include ProjectLevelAuthorization
 
   before_action :authorize_project_deployer!, only: [:index]
-  before_action :authorize_project_admin!, only: [:show, :update, :new, :refresh]
+  before_action :authorize_project_admin!, only: [:show, :update, :refresh]
 
   def index
     render json: current_project.roles.order('id desc'), root: false
@@ -22,7 +22,12 @@ class KubernetesRolesController < ApplicationController
   end
 
   def refresh
-    render status: :ok, json: current_project.refresh_kubernetes_roles!(refresh_params), root: false
+    roles = current_project.refresh_kubernetes_roles!(refresh_params)
+    if roles.try(:any?)
+      render status: :ok, json: roles, root: false
+    else
+      render status: :not_found, json: {}
+    end
   end
 
   private
