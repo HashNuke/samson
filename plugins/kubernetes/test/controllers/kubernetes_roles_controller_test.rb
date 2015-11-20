@@ -91,28 +91,28 @@ describe KubernetesRolesController do
 
     as_a_viewer do
       it 'responds with unauthorized' do
-        put :update, project_id: :foo, id: role.id
+        put :update, project_id: :foo, id: role.id, authenticity_token:  set_form_authenticity_token
         @unauthorized.must_equal true, 'Request should get unauthorized'
       end
     end
 
     as_a_deployer do
       it 'responds with unauthorized' do
-        put :update, project_id: project.id, id: role.id
+        put :update, project_id: project.id, id: role.id, authenticity_token:  set_form_authenticity_token
         @unauthorized.must_equal true, 'Request should get unauthorized'
       end
     end
 
     as_a_project_deployer do
       it 'responds with unauthorized' do
-        put :update, project_id: project.id, id: role.id
+        put :update, project_id: project.id, id: role.id, authenticity_token:  set_form_authenticity_token
         @unauthorized.must_equal true, 'Request should get unauthorized'
       end
     end
 
     as_a_admin do
       it 'responds successfully' do
-        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }
+        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }, authenticity_token:  set_form_authenticity_token
         assert_updated_role
         assert_response_body(response.body)
       end
@@ -120,7 +120,7 @@ describe KubernetesRolesController do
 
     as_a_project_admin do
       it 'responds successfully' do
-        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }
+        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }, authenticity_token:  set_form_authenticity_token
         assert_updated_role
         assert_response_body(response.body)
       end
@@ -152,28 +152,28 @@ describe KubernetesRolesController do
 
     as_a_viewer do
       it 'responds with unauthorized' do
-        put :update, project_id: :foo, id: role.id
+        put :update, project_id: :foo, id: role.id, authenticity_token:  set_form_authenticity_token
         @unauthorized.must_equal true, 'Request should get unauthorized'
       end
     end
 
     as_a_deployer do
       it 'responds with unauthorized' do
-        put :update, project_id: project.id, id: role.id
+        put :update, project_id: project.id, id: role.id, authenticity_token:  set_form_authenticity_token
         @unauthorized.must_equal true, 'Request should get unauthorized'
       end
     end
 
     as_a_project_deployer do
       it 'responds with unauthorized' do
-        put :update, project_id: project.id, id: role.id
+        put :update, project_id: project.id, id: role.id, authenticity_token:  set_form_authenticity_token
         @unauthorized.must_equal true, 'Request should get unauthorized'
       end
     end
 
     as_a_admin do
       it 'responds successfully' do
-        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }
+        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }, authenticity_token:  set_form_authenticity_token
         assert_updated_role
         assert_response_body(response.body)
       end
@@ -181,7 +181,7 @@ describe KubernetesRolesController do
 
     as_a_project_admin do
       it 'responds successfully' do
-        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }
+        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 4, cpu: 1, ram: 512 }, authenticity_token:  set_form_authenticity_token
         assert_updated_role
         assert_response_body(response.body)
       end
@@ -189,7 +189,7 @@ describe KubernetesRolesController do
 
     as_a_admin do
       it 'returns user friendly errors as a result of a bad request' do
-        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 0, cpu: 0, ram: 0 }
+        put :update, project_id: project.id, id: role.id, kubernetes_role: { replicas: 0, cpu: 0, ram: 0 }, authenticity_token:  set_form_authenticity_token
         assert_role_not_updated
         assert_errors(response.body)
       end
