@@ -124,19 +124,10 @@ class GitRepository
     Dir.exist?(repo_cache_dir)
   end
 
-  # Runs a single command and gathers the output into an array of strings.
-  # Filters any duplicate entries on that array and executes a natural sort before returning the output.
   def run_single_command(command, pwd: repo_cache_dir)
-    success, result = run_commands(command, pwd: pwd) { |line| yield line if block_given? }
-    [success, result.uniq.sort]
-  end
-
-  # Runs the provided command or list of commands.
-  # This method DOES NOT filter the output, neither does any sort of sorting.
-  def run_commands(commands, pwd: repo_cache_dir)
     tmp_executor = TerminalExecutor.new(StringIO.new)
-    success = tmp_executor.execute!("cd #{pwd}", commands)
-    result = tmp_executor.output.string.lines.map { |line| yield line if block_given? }
+    success = tmp_executor.execute!("cd #{pwd}", command)
+    result = tmp_executor.output.string.lines.map { |line| yield line if block_given? }.uniq.sort
     [success, result]
   end
 end
