@@ -15,7 +15,7 @@ samson.controller('KubernetesEditRoleCtrl', function($scope, $state, $stateParam
         $state.go('kubernetes.roles');
       },
       function(result) {
-        handleFailure(result);
+        notificationService.errors(result.messages);
       }
     );
   };
@@ -24,30 +24,16 @@ samson.controller('KubernetesEditRoleCtrl', function($scope, $state, $stateParam
     $state.go('kubernetes.roles');
   };
 
-
   function loadRole() {
     kubernetesService.loadRole($stateParams.project_id, $stateParams.role_id).then(
       function(role) {
         $scope.role = role;
       },
       function(result) {
-        handleFailure(result);
+        notificationService.errors(result.messages);
       }
     );
   }
 
   loadRole();
-
-  function handleFailure(result) {
-    if(result.type == 'error') {
-      result.messages.map(function(message) {
-        notificationService.error(message);
-      });
-    }
-    else if(result.type == 'warning'){
-      result.messages.map(function(message) {
-        notificationService.warning(message);
-      });
-    }
-  }
 });
