@@ -23,10 +23,10 @@ class KubernetesRolesController < ApplicationController
 
   def refresh
     roles = current_project.refresh_kubernetes_roles!(refresh_params)
-    if roles.try(:any?)
-      render status: :ok, json: roles, root: false
-    else
+    if roles.to_a.empty?
       render status: :not_found, json: {}
+    else
+      render status: :ok, json: roles, root: false
     end
   end
 

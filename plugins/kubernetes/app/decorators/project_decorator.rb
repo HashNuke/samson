@@ -28,7 +28,7 @@ Project.class_eval do
   def refresh_kubernetes_roles!(git_ref)
     config_files = directory_contents_from_repo('kubernetes', git_ref)
 
-    if config_files.try(:any?)
+    unless config_files.to_a.empty?
       Project.transaction do
         roles.each(&:soft_delete!)
 
