@@ -20,7 +20,7 @@ samson.directive('gitReferencesTypeahead', function() {
 
         return deferred.promise.then(function(data) {
           return data;
-        })
+        });
       };
 
       $scope.checkStatus = function() {
@@ -114,5 +114,5 @@ samson.directive('gitReferencesTypeahead', function() {
 
       engine.initialize();
     }
-  }
+  };
 });
