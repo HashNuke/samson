@@ -1,4 +1,4 @@
-require 'slack'
+require 'faraday'
 
 module SamsonSlack
   class Engine < Rails::Engine
@@ -7,11 +7,11 @@ end
 Samson::Hooks.view :stage_form, "samson_slack/fields"
 
 Samson::Hooks.callback :stage_clone do |old_stage, new_stage|
-  new_stage.slack_channels.build(old_stage.slack_channels.map { |s| s.attributes.except("id", "created_at", "updated_at") })
+  new_stage.slack_webhooks.build(old_stage.slack_webhooks.map { |s| s.attributes.except("id", "created_at", "updated_at") })
 end
 
 Samson::Hooks.callback :stage_permitted_params do
-  { slack_channels_attributes: [:id, :name, :token, :_destroy] }
+  { slack_webhooks_attributes: [:id, :webhook_url, :channel, :_destroy] }
 end
 
 notify = -> (deploy, _buddy) do
